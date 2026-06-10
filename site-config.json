@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "nome": "Dott.ssa Teresa Guzzo",
+  "professione": "Dermatologa",
+  "tagline": "La salute della tua pelle merita attenzione, ascolto ed esperienza.",
+  "bio": "Specialista in Dermatologia, riceve ad Ancona dove si occupa di diagnosi e cura delle patologie della pelle, dei capelli e delle unghie. Dedica particolare attenzione alla prevenzione dei tumori cutanei e alla cura del paziente in ogni fase del percorso, dalla prima visita al follow-up.",
+  "servizi": [
+    "Visita dermatologica",
+    "Mappatura dei nei in epiluminescenza",
+    "Trattamento dell'acne",
+    "Tricologia (capelli e cuoio capelluto)",
+    "Crioterapia"
+  ],
+  "indirizzo": "Via Guido Miglioli 30, 60131 Ancona (AN)",
+  "telefono": "",
+  "email": "",
+  "orari": "Su appuntamento",
+  "linkPrenotazione": "",
+  "tema": "teal",
+  "mostraBio": true,
+  "mostraServizi": true,
+  "mostraContatti": true
+}

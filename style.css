@@ -510,6 +510,10 @@ a {
   color: var(--accent-dark);
 }
 
+.save-note.error {
+  color: #b3261e;
+}
+
 /* ============ Responsive ============ */
 
 @media (max-width: 760px) {

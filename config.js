@@ -1,11 +1,15 @@
 // Configurazione condivisa tra landing page e configuratore.
-// I dati personalizzati vengono salvati in localStorage; in assenza si usano i default.
+//
+// La configurazione pubblicata vive in site-config.json nel repository ed è
+// quindi identica per tutti i visitatori. Il configuratore la aggiorna
+// committando quel file tramite l'API di GitHub (serve la chiave di
+// pubblicazione); qui ci sono solo lettura, default e sanitizzazione.
 
-const STORAGE_KEY = "sito-config";
+const CONFIG_URL = "site-config.json";
 
-// Aumentare quando i contenuti predefiniti cambiano in modo incompatibile:
-// le configurazioni salvate con versione diversa vengono scartate.
-const CONFIG_VERSION = 2;
+// Aumentare quando la struttura della configurazione cambia in modo
+// incompatibile: un site-config.json con versione diversa viene ignorato.
+const CONFIG_VERSION = 3;
 
 const DEFAULT_CONFIG = {
   nome: "Dott.ssa Teresa Guzzo",
@@ -30,33 +34,33 @@ const DEFAULT_CONFIG = {
   mostraContatti: true
 };
 
-function loadConfig() {
+// Ogni campo deve avere il tipo del default, così il resto del codice può
+// usare .trim() e .forEach senza guardie.
+function sanitizeConfig(raw) {
+  const config = { ...DEFAULT_CONFIG, ...raw };
+  for (const key of Object.keys(DEFAULT_CONFIG)) {
+    if (typeof config[key] !== typeof DEFAULT_CONFIG[key]) {
+      config[key] = DEFAULT_CONFIG[key];
+    }
+  }
+  config.servizi = Array.isArray(config.servizi)
+    ? config.servizi.filter(s => typeof s === "string" && s.trim())
+    : [...DEFAULT_CONFIG.servizi];
+  return config;
+}
+
+async function loadConfig() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved && typeof saved === "object" && saved.version === CONFIG_VERSION) {
-      const config = { ...DEFAULT_CONFIG, ...saved };
-      // Sanitizzazione: ogni campo deve avere il tipo del default,
-      // così il resto del codice può usare .trim() e .forEach senza guardie.
-      for (const key of Object.keys(DEFAULT_CONFIG)) {
-        if (typeof config[key] !== typeof DEFAULT_CONFIG[key]) {
-          config[key] = DEFAULT_CONFIG[key];
-        }
+    // Query param anti-cache: GitHub Pages/CDN servono subito l'ultima versione.
+    const res = await fetch(CONFIG_URL + "?t=" + Date.now(), { cache: "no-store" });
+    if (res.ok) {
+      const saved = await res.json();
+      if (saved && typeof saved === "object" && saved.version === CONFIG_VERSION) {
+        return sanitizeConfig(saved);
       }
-      config.servizi = Array.isArray(config.servizi)
-        ? config.servizi.filter(s => typeof s === "string" && s.trim())
-        : [...DEFAULT_CONFIG.servizi];
-      return config;
     }
   } catch (e) {
-    // dati corrotti: si riparte dai default
+    // offline o file assente (es. apertura da file://): si usano i default
   }
   return { ...DEFAULT_CONFIG };
-}
-
-function saveConfig(config) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...config, version: CONFIG_VERSION }));
-}
-
-function resetConfig() {
-  localStorage.removeItem(STORAGE_KEY);
 }

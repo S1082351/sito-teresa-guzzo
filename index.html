@@ -87,13 +87,13 @@
   <footer class="site-footer">
     <div class="container">
       <span>© <span id="anno"></span> <span class="js-nome">Dott.ssa Teresa Guzzo</span> — <span class="js-professione"></span></span>
-      <a href="configurator.html">⚙ Configura il sito</a>
     </div>
   </footer>
 
   <script src="config.js"></script>
   <script>
-    const config = loadConfig();
+  (async () => {
+    const config = await loadConfig();
 
     function setAll(selector, value) {
       document.querySelectorAll(selector).forEach(el => { el.textContent = value; });
@@ -172,6 +172,7 @@
     });
 
     document.getElementById("anno").textContent = new Date().getFullYear();
+  })();
   </script>
 </body>
 </html>

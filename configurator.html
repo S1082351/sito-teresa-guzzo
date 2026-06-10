@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Configurazione del sito</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +12,7 @@
   <div class="config-page">
     <p class="config-topbar"><a href="index.html">← Torna al sito</a></p>
     <h1>Configurazione del sito</h1>
-    <p class="config-intro">Rispondi alle domande qui sotto: le risposte popolano la landing page. Le modifiche restano salvate nel browser.</p>
+    <p class="config-intro">Rispondi alle domande qui sotto: le risposte popolano la landing page. Pubblicando, le modifiche diventano visibili a tutti i visitatori del sito; serve la chiave di pubblicazione.</p>
 
     <form id="config-form">
 
@@ -113,11 +114,20 @@
         </div>
       </div>
 
-      <div class="config-actions">
-        <button type="submit" class="btn btn-primary">Salva e vedi il sito</button>
-        <button type="button" class="btn btn-outline" id="btn-reset">Ripristina i valori predefiniti</button>
+      <div class="config-section">
+        <h2>6. Pubblicazione</h2>
+        <p class="hint">La chiave di pubblicazione autorizza il salvataggio: senza, nessuno può modificare il sito. Viene ricordata su questo dispositivo dopo la prima pubblicazione.</p>
+        <div class="field">
+          <label for="f-token">Chiave di pubblicazione</label>
+          <input type="password" id="f-token" autocomplete="current-password" placeholder="github_pat_…">
+        </div>
       </div>
-      <p class="save-note hidden" id="save-note">Configurazione salvata ✔</p>
+
+      <div class="config-actions">
+        <button type="submit" class="btn btn-primary" id="btn-publish">Pubblica le modifiche online</button>
+        <button type="button" class="btn btn-outline" id="btn-reset">Riporta il modulo ai predefiniti</button>
+      </div>
+      <p class="save-note hidden" id="publish-status"></p>
     </form>
   </div>
 
@@ -211,21 +221,86 @@
       };
     }
 
-    form.addEventListener("submit", e => {
+    // ---- Pubblicazione: committa site-config.json nel repository ----
+    // La landing legge quel file, quindi le modifiche valgono per tutti.
+
+    const REPO = "S1082351/sito-teresa-guzzo";
+    const TOKEN_KEY = "sito-chiave-pubblicazione";
+    const statusEl = document.getElementById("publish-status");
+    const publishBtn = document.getElementById("btn-publish");
+
+    function setStatus(text, isError) {
+      statusEl.textContent = text;
+      statusEl.classList.toggle("hidden", !text);
+      statusEl.classList.toggle("error", Boolean(isError));
+    }
+
+    function toBase64(text) {
+      let bin = "";
+      new TextEncoder().encode(text).forEach(b => { bin += String.fromCharCode(b); });
+      return btoa(bin);
+    }
+
+    async function publish(config, token) {
+      const url = "https://api.github.com/repos/" + REPO + "/contents/" + CONFIG_URL;
+      const headers = {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/vnd.github+json"
+      };
+      const current = await fetch(url, { headers });
+      if (current.status === 401) throw new Error("Chiave di pubblicazione non valida.");
+      if (current.status === 403 || current.status === 404) throw new Error("La chiave non ha accesso a questo sito: controlla che sia quella giusta e non scaduta.");
+      if (!current.ok) throw new Error("Errore nel leggere la configurazione attuale (HTTP " + current.status + ").");
+      const sha = (await current.json()).sha;
+
+      const put = await fetch(url, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          message: "Aggiorna contenuti del sito dal configuratore",
+          content: toBase64(JSON.stringify(config, null, 2) + "\n"),
+          sha,
+          branch: "main"
+        })
+      });
+      if (!put.ok) {
+        const err = await put.json().catch(() => ({}));
+        throw new Error("Pubblicazione fallita: " + (err.message || "HTTP " + put.status));
+      }
+    }
+
+    form.addEventListener("submit", async e => {
       e.preventDefault();
-      saveConfig(readForm());
-      document.getElementById("save-note").classList.remove("hidden");
-      window.location.href = "index.html";
+      const token = document.getElementById("f-token").value.trim();
+      if (!token) {
+        setStatus("Inserisci la chiave di pubblicazione per salvare le modifiche.", true);
+        return;
+      }
+      publishBtn.disabled = true;
+      setStatus("Pubblicazione in corso…", false);
+      try {
+        const config = readForm();
+        config.version = CONFIG_VERSION;
+        await publish(config, token);
+        localStorage.setItem(TOKEN_KEY, token);
+        setStatus("Pubblicato ✔ Il sito si aggiorna entro un paio di minuti.", false);
+      } catch (err) {
+        setStatus(err.message, true);
+      } finally {
+        publishBtn.disabled = false;
+      }
     });
 
     document.getElementById("btn-reset").addEventListener("click", () => {
-      if (!confirm("Ripristinare i valori predefiniti? Le modifiche salvate andranno perse.")) return;
-      resetConfig();
-      fillForm(loadConfig());
-      document.getElementById("save-note").classList.add("hidden");
+      if (!confirm("Sostituire i valori del modulo con quelli predefiniti? Niente viene pubblicato finché non premi Pubblica.")) return;
+      fillForm({ ...DEFAULT_CONFIG });
+      setStatus("", false);
     });
 
-    fillForm(loadConfig());
+    (async () => {
+      fillForm(await loadConfig());
+      document.getElementById("f-token").value = localStorage.getItem(TOKEN_KEY) || "";
+    })();
   </script>
 </body>
 </html>
