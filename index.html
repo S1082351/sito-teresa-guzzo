@@ -16,7 +16,7 @@
         <a href="#chi-sono" class="js-nav-bio">Chi sono</a>
         <a href="#servizi" class="js-nav-servizi">Servizi</a>
         <a href="#contatti" class="js-nav-contatti">Contatti</a>
-        <a href="#" class="btn btn-primary js-prenota">Prenota una visita</a>
+        <a href="#" class="btn btn-primary js-prenota hidden">Prenota una visita</a>
       </nav>
     </div>
   </header>
@@ -27,14 +27,14 @@
         <div class="hero-text">
           <span class="kicker js-professione">Dermatologa</span>
           <h1 class="js-nome">Dott.ssa Teresa Guzzo</h1>
-          <p class="tagline js-tagline"></p>
+          <p class="tagline js-tagline">La salute della tua pelle merita attenzione, ascolto ed esperienza.</p>
           <div class="hero-actions">
-            <a href="#" class="btn btn-primary js-prenota">Prenota una visita</a>
+            <a href="#" class="btn btn-primary js-prenota hidden">Prenota una visita</a>
             <a href="#servizi" class="btn btn-outline js-nav-servizi">Scopri i servizi</a>
           </div>
         </div>
         <div class="hero-figure">
-          <div class="avatar js-iniziali">TG</div>
+          <div class="avatar js-iniziali" aria-hidden="true">TG</div>
         </div>
       </div>
     </section>
@@ -42,8 +42,8 @@
     <section class="section" id="chi-sono">
       <div class="container">
         <h2>Chi sono</h2>
-        <p class="section-sub js-professione"></p>
-        <p class="bio-text js-bio"></p>
+        <p class="section-sub js-professione">Dermatologa</p>
+        <p class="bio-text js-bio">Specialista in Dermatologia, riceve ad Ancona dove si occupa di diagnosi e cura delle patologie della pelle, dei capelli e delle unghie. Dedica particolare attenzione alla prevenzione dei tumori cutanei e alla cura del paziente in ogni fase del percorso, dalla prima visita al follow-up.</p>
       </div>
     </section>
 
@@ -51,7 +51,13 @@
       <div class="container">
         <h2>Servizi</h2>
         <p class="section-sub">Prestazioni svolte in studio.</p>
-        <div class="services-grid js-servizi"></div>
+        <ul class="services-list js-servizi">
+          <li class="service-item">Visita dermatologica</li>
+          <li class="service-item">Mappatura dei nei in epiluminescenza</li>
+          <li class="service-item">Trattamento dell'acne</li>
+          <li class="service-item">Tricologia (capelli e cuoio capelluto)</li>
+          <li class="service-item">Crioterapia</li>
+        </ul>
       </div>
     </section>
 
@@ -62,23 +68,23 @@
         <div class="contact-grid">
           <div class="contact-card" id="card-indirizzo">
             <h3>Studio</h3>
-            <p class="js-indirizzo"></p>
+            <p class="js-indirizzo">Via Guido Miglioli 30, 60131 Ancona (AN)</p>
           </div>
           <div class="contact-card" id="card-orari">
             <h3>Orari</h3>
-            <p class="js-orari"></p>
+            <p class="js-orari">Su appuntamento</p>
           </div>
-          <div class="contact-card" id="card-telefono">
+          <div class="contact-card hidden" id="card-telefono">
             <h3>Telefono</h3>
             <p><a class="js-telefono" href="#"></a></p>
           </div>
-          <div class="contact-card" id="card-email">
+          <div class="contact-card hidden" id="card-email">
             <h3>Email</h3>
             <p><a class="js-email" href="#"></a></p>
           </div>
         </div>
         <div class="contact-cta">
-          <a href="#" class="btn btn-primary js-prenota">Prenota online</a>
+          <a href="#" class="btn btn-primary js-prenota hidden">Prenota online</a>
         </div>
       </div>
     </section>
@@ -86,7 +92,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <span>© <span id="anno"></span> <span class="js-nome">Dott.ssa Teresa Guzzo</span> — <span class="js-professione"></span></span>
+      <span>© <span id="anno">2026</span> <span class="js-nome">Dott.ssa Teresa Guzzo</span> — <span class="js-professione">Dermatologa</span></span>
     </div>
   </footer>
 
@@ -124,31 +130,28 @@
       document.querySelectorAll(".js-nav-bio").forEach(el => el.classList.add("hidden"));
     }
 
-    // Servizi
-    const grid = document.querySelector(".js-servizi");
+    // Servizi (sostituisce i predefiniti statici del markup)
+    const lista = document.querySelector(".js-servizi");
+    lista.textContent = "";
     config.servizi.forEach(servizio => {
-      const card = document.createElement("div");
-      card.className = "service-card";
-      const dot = document.createElement("span");
-      dot.className = "dot";
-      const p = document.createElement("p");
-      p.textContent = servizio;
-      card.append(dot, p);
-      grid.appendChild(card);
+      const item = document.createElement("li");
+      item.className = "service-item";
+      item.textContent = servizio;
+      lista.appendChild(item);
     });
     if (!config.mostraServizi || config.servizi.length === 0) {
       document.getElementById("servizi").classList.add("hidden");
       document.querySelectorAll(".js-nav-servizi").forEach(el => el.classList.add("hidden"));
     }
 
-    // Contatti: nasconde le card senza dati
+    // Contatti: mostra le card con dati, nasconde le altre
     function fillCard(cardId, selector, value, href) {
-      const el = document.querySelector(selector);
-      if (value && value.trim()) {
+      const presente = Boolean(value && value.trim());
+      document.getElementById(cardId).classList.toggle("hidden", !presente);
+      if (presente) {
+        const el = document.querySelector(selector);
         el.textContent = value;
         if (href) el.href = href;
-      } else {
-        document.getElementById(cardId).classList.add("hidden");
       }
     }
     fillCard("card-indirizzo", ".js-indirizzo", config.indirizzo);
@@ -160,14 +163,14 @@
       document.querySelectorAll(".js-nav-contatti").forEach(el => el.classList.add("hidden"));
     }
 
-    // Pulsanti di prenotazione
+    // Pulsanti di prenotazione: visibili solo se c'è un link
+    const linkPrenotazione = config.linkPrenotazione.trim();
     document.querySelectorAll(".js-prenota").forEach(btn => {
-      if (config.linkPrenotazione.trim()) {
-        btn.href = config.linkPrenotazione;
+      btn.classList.toggle("hidden", !linkPrenotazione);
+      if (linkPrenotazione) {
+        btn.href = linkPrenotazione;
         btn.target = "_blank";
         btn.rel = "noopener";
-      } else {
-        btn.classList.add("hidden");
       }
     });
 
