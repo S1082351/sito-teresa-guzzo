@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurazione del sito</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="teal">
+
+  <div class="config-page">
+    <p class="config-topbar"><a href="index.html">← Torna al sito</a></p>
+    <h1>Configurazione del sito</h1>
+    <p class="config-intro">Rispondi alle domande qui sotto: le risposte popolano la landing page. Le modifiche restano salvate nel browser.</p>
+
+    <form id="config-form">
+
+      <div class="config-section">
+        <h2>1. Chi è la professionista?</h2>
+        <p class="hint">Nome e qualifica compaiono nell'intestazione, nel titolo grande e nel piè di pagina.</p>
+        <div class="field">
+          <label for="f-nome">Nome completo (con titolo)</label>
+          <input type="text" id="f-nome" name="nome" required>
+        </div>
+        <div class="field">
+          <label for="f-professione">Professione / specializzazione</label>
+          <input type="text" id="f-professione" name="professione" required>
+        </div>
+        <div class="field">
+          <label for="f-tagline">Frase di presentazione (tagline)</label>
+          <input type="text" id="f-tagline" name="tagline">
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h2>2. Come vuoi presentarti?</h2>
+        <p class="hint">Il testo della sezione “Chi sono”. Puoi andare a capo per creare paragrafi.</p>
+        <label class="switch-item">
+          <input type="checkbox" id="f-mostra-bio" name="mostraBio">
+          Mostra la sezione “Chi sono”
+        </label>
+        <div class="field">
+          <label for="f-bio">Biografia</label>
+          <textarea id="f-bio" name="bio" rows="5"></textarea>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h2>3. Quali servizi offri?</h2>
+        <p class="hint">Seleziona i servizi da mostrare; puoi aggiungerne altri, uno per riga.</p>
+        <label class="switch-item">
+          <input type="checkbox" id="f-mostra-servizi" name="mostraServizi">
+          Mostra la sezione “Servizi”
+        </label>
+        <div class="check-grid" id="servizi-grid">
+          <!-- popolato da JS -->
+        </div>
+        <div class="field">
+          <label for="f-servizi-extra">Altri servizi (uno per riga)</label>
+          <textarea id="f-servizi-extra" rows="3" placeholder="Es. Dermatologia pediatrica"></textarea>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h2>4. Dove e come ti si può contattare?</h2>
+        <p class="hint">I campi lasciati vuoti non compaiono nella pagina.</p>
+        <label class="switch-item">
+          <input type="checkbox" id="f-mostra-contatti" name="mostraContatti">
+          Mostra la sezione “Contatti e orari”
+        </label>
+        <div class="field">
+          <label for="f-indirizzo">Indirizzo dello studio</label>
+          <input type="text" id="f-indirizzo" name="indirizzo">
+        </div>
+        <div class="field">
+          <label for="f-orari">Orari di ricevimento</label>
+          <input type="text" id="f-orari" name="orari" placeholder="Es. Lun–Ven 9:00–18:00, su appuntamento">
+        </div>
+        <div class="field">
+          <label for="f-telefono">Telefono</label>
+          <input type="tel" id="f-telefono" name="telefono" placeholder="Es. 071 123456">
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input type="email" id="f-email" name="email" placeholder="Es. studio@esempio.it">
+        </div>
+        <div class="field">
+          <label for="f-prenotazione">Link per la prenotazione online (lascia vuoto per nascondere i pulsanti)</label>
+          <input type="url" id="f-prenotazione" name="linkPrenotazione" placeholder="https://...">
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h2>5. Che aspetto deve avere il sito?</h2>
+        <p class="hint">Colore principale di pulsanti, link e sfondi.</p>
+        <div class="theme-options" id="theme-options">
+          <label class="theme-option">
+            <input type="radio" name="tema" value="teal">
+            <span class="swatch" style="background:#0e7c7b"></span> Verde acqua
+          </label>
+          <label class="theme-option">
+            <input type="radio" name="tema" value="blu">
+            <span class="swatch" style="background:#2563a8"></span> Blu
+          </label>
+          <label class="theme-option">
+            <input type="radio" name="tema" value="rosa">
+            <span class="swatch" style="background:#b25471"></span> Rosa antico
+          </label>
+          <label class="theme-option">
+            <input type="radio" name="tema" value="viola">
+            <span class="swatch" style="background:#6d5aa8"></span> Viola
+          </label>
+        </div>
+      </div>
+
+      <div class="config-actions">
+        <button type="submit" class="btn btn-primary">Salva e vedi il sito</button>
+        <button type="button" class="btn btn-outline" id="btn-reset">Ripristina i valori predefiniti</button>
+      </div>
+      <p class="save-note hidden" id="save-note">Configurazione salvata ✔</p>
+    </form>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const SERVIZI_PREDEFINITI = [
+      "Visita dermatologica",
+      "Mappatura dei nei in epiluminescenza",
+      "Trattamento dell'acne",
+      "Tricologia (capelli e cuoio capelluto)",
+      "Crioterapia",
+      "Visita venereologica",
+      "Chirurgia dermatologica ambulatoriale",
+      "Dermatologia pediatrica"
+    ];
+
+    const form = document.getElementById("config-form");
+    const serviziGrid = document.getElementById("servizi-grid");
+
+    // Crea le checkbox dei servizi predefiniti
+    SERVIZI_PREDEFINITI.forEach((servizio, i) => {
+      const label = document.createElement("label");
+      label.className = "check-item";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.name = "servizio";
+      input.value = servizio;
+      input.id = "servizio-" + i;
+      label.append(input, document.createTextNode(" " + servizio));
+      serviziGrid.appendChild(label);
+    });
+
+    // Riempie il form con la configurazione corrente
+    function fillForm(config) {
+      form.nome.value = config.nome;
+      form.professione.value = config.professione;
+      form.tagline.value = config.tagline;
+      form.bio.value = config.bio;
+      form.indirizzo.value = config.indirizzo;
+      form.orari.value = config.orari;
+      form.telefono.value = config.telefono;
+      form.email.value = config.email;
+      form.linkPrenotazione.value = config.linkPrenotazione;
+
+      document.getElementById("f-mostra-bio").checked = config.mostraBio;
+      document.getElementById("f-mostra-servizi").checked = config.mostraServizi;
+      document.getElementById("f-mostra-contatti").checked = config.mostraContatti;
+
+      const extra = [];
+      document.querySelectorAll('input[name="servizio"]').forEach(cb => { cb.checked = false; });
+      config.servizi.forEach(servizio => {
+        const cb = [...document.querySelectorAll('input[name="servizio"]')]
+          .find(c => c.value === servizio);
+        if (cb) cb.checked = true;
+        else extra.push(servizio);
+      });
+      document.getElementById("f-servizi-extra").value = extra.join("\n");
+
+      const radio = form.querySelector('input[name="tema"][value="' + config.tema + '"]');
+      (radio || form.querySelector('input[name="tema"]')).checked = true;
+      document.body.dataset.theme = config.tema;
+    }
+
+    // Anteprima immediata del tema sul configuratore stesso
+    document.getElementById("theme-options").addEventListener("change", e => {
+      if (e.target.name === "tema") document.body.dataset.theme = e.target.value;
+    });
+
+    // Legge il form e costruisce l'oggetto configurazione
+    function readForm() {
+      const servizi = [...document.querySelectorAll('input[name="servizio"]:checked')]
+        .map(cb => cb.value);
+      document.getElementById("f-servizi-extra").value
+        .split("\n")
+        .map(r => r.trim())
+        .filter(Boolean)
+        .forEach(s => { if (!servizi.includes(s)) servizi.push(s); });
+
+      return {
+        nome: form.nome.value.trim(),
+        professione: form.professione.value.trim(),
+        tagline: form.tagline.value.trim(),
+        bio: form.bio.value.trim(),
+        servizi,
+        indirizzo: form.indirizzo.value.trim(),
+        orari: form.orari.value.trim(),
+        telefono: form.telefono.value.trim(),
+        email: form.email.value.trim(),
+        linkPrenotazione: form.linkPrenotazione.value.trim(),
+        tema: form.querySelector('input[name="tema"]:checked').value,
+        mostraBio: document.getElementById("f-mostra-bio").checked,
+        mostraServizi: document.getElementById("f-mostra-servizi").checked,
+        mostraContatti: document.getElementById("f-mostra-contatti").checked
+      };
+    }
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      saveConfig(readForm());
+      document.getElementById("save-note").classList.remove("hidden");
+      window.location.href = "index.html";
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      if (!confirm("Ripristinare i valori predefiniti? Le modifiche salvate andranno perse.")) return;
+      resetConfig();
+      fillForm(loadConfig());
+      document.getElementById("save-note").classList.add("hidden");
+    });
+
+    fillForm(loadConfig());
+  </script>
+</body>
+</html>

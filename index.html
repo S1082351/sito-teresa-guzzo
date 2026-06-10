@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dott.ssa Teresa Guzzo — Dermatologa</title>
+  <meta name="description" content="Sito informativo della Dott.ssa Teresa Guzzo, dermatologa e venereologa ad Ancona.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="teal">
+
+  <header class="site-header">
+    <div class="container">
+      <a href="#" class="brand"><span>●</span> <span class="js-nome">Dott.ssa Teresa Guzzo</span></a>
+      <nav class="site-nav">
+        <a href="#chi-sono" class="js-nav-bio">Chi sono</a>
+        <a href="#servizi" class="js-nav-servizi">Servizi</a>
+        <a href="#contatti" class="js-nav-contatti">Contatti</a>
+        <a href="#" class="btn btn-primary js-prenota">Prenota una visita</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-text">
+          <span class="kicker js-professione">Dermatologa · Venereologa</span>
+          <h1 class="js-nome">Dott.ssa Teresa Guzzo</h1>
+          <p class="tagline js-tagline"></p>
+          <div class="hero-actions">
+            <a href="#" class="btn btn-primary js-prenota">Prenota una visita</a>
+            <a href="#servizi" class="btn btn-outline js-nav-servizi">Scopri i servizi</a>
+          </div>
+        </div>
+        <div class="hero-figure">
+          <div class="avatar js-iniziali">TG</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="chi-sono">
+      <div class="container">
+        <h2>Chi sono</h2>
+        <p class="section-sub js-professione"></p>
+        <p class="bio-text js-bio"></p>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="servizi">
+      <div class="container">
+        <h2>Servizi</h2>
+        <p class="section-sub">Prestazioni svolte in studio.</p>
+        <div class="services-grid js-servizi"></div>
+      </div>
+    </section>
+
+    <section class="section" id="contatti">
+      <div class="container">
+        <h2>Contatti e orari</h2>
+        <p class="section-sub">Dove ricevo e come raggiungermi.</p>
+        <div class="contact-grid">
+          <div class="contact-card" id="card-indirizzo">
+            <h3>Studio</h3>
+            <p class="js-indirizzo"></p>
+          </div>
+          <div class="contact-card" id="card-orari">
+            <h3>Orari</h3>
+            <p class="js-orari"></p>
+          </div>
+          <div class="contact-card" id="card-telefono">
+            <h3>Telefono</h3>
+            <p><a class="js-telefono" href="#"></a></p>
+          </div>
+          <div class="contact-card" id="card-email">
+            <h3>Email</h3>
+            <p><a class="js-email" href="#"></a></p>
+          </div>
+        </div>
+        <div class="contact-cta">
+          <a href="#" class="btn btn-primary js-prenota">Prenota online</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© <span id="anno"></span> <span class="js-nome">Dott.ssa Teresa Guzzo</span> — <span class="js-professione"></span></span>
+      <a href="configurator.html">⚙ Configura il sito</a>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script>
+    const config = loadConfig();
+
+    function setAll(selector, value) {
+      document.querySelectorAll(selector).forEach(el => { el.textContent = value; });
+    }
+
+    // Tema
+    document.body.dataset.theme = config.tema;
+
+    // Testi ripetuti
+    setAll(".js-nome", config.nome);
+    setAll(".js-professione", config.professione);
+    setAll(".js-tagline", config.tagline);
+    document.title = config.nome + " — " + config.professione;
+
+    // Iniziali per l'avatar (prime lettere delle parole, max 2, ignorando i titoli)
+    const parole = config.nome
+      .replace(/dott\.?ssa|dott\.?|prof\.?ssa|prof\.?|dr\.?/gi, "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    const iniziali = parole.slice(0, 2).map(p => p[0].toUpperCase()).join("");
+    setAll(".js-iniziali", iniziali || "–");
+
+    // Bio
+    document.querySelector(".js-bio").textContent = config.bio;
+    if (!config.mostraBio || !config.bio.trim()) {
+      document.getElementById("chi-sono").classList.add("hidden");
+      document.querySelectorAll(".js-nav-bio").forEach(el => el.classList.add("hidden"));
+    }
+
+    // Servizi
+    const grid = document.querySelector(".js-servizi");
+    config.servizi.forEach(servizio => {
+      const card = document.createElement("div");
+      card.className = "service-card";
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      const p = document.createElement("p");
+      p.textContent = servizio;
+      card.append(dot, p);
+      grid.appendChild(card);
+    });
+    if (!config.mostraServizi || config.servizi.length === 0) {
+      document.getElementById("servizi").classList.add("hidden");
+      document.querySelectorAll(".js-nav-servizi").forEach(el => el.classList.add("hidden"));
+    }
+
+    // Contatti: nasconde le card senza dati
+    function fillCard(cardId, selector, value, href) {
+      const el = document.querySelector(selector);
+      if (value && value.trim()) {
+        el.textContent = value;
+        if (href) el.href = href;
+      } else {
+        document.getElementById(cardId).classList.add("hidden");
+      }
+    }
+    fillCard("card-indirizzo", ".js-indirizzo", config.indirizzo);
+    fillCard("card-orari", ".js-orari", config.orari);
+    fillCard("card-telefono", ".js-telefono", config.telefono, "tel:" + config.telefono.replace(/\s+/g, ""));
+    fillCard("card-email", ".js-email", config.email, "mailto:" + config.email);
+    if (!config.mostraContatti) {
+      document.getElementById("contatti").classList.add("hidden");
+      document.querySelectorAll(".js-nav-contatti").forEach(el => el.classList.add("hidden"));
+    }
+
+    // Pulsanti di prenotazione
+    document.querySelectorAll(".js-prenota").forEach(btn => {
+      if (config.linkPrenotazione.trim()) {
+        btn.href = config.linkPrenotazione;
+        btn.target = "_blank";
+        btn.rel = "noopener";
+      } else {
+        btn.classList.add("hidden");
+      }
+    });
+
+    document.getElementById("anno").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
