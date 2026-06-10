@@ -123,16 +123,13 @@
 
   <script src="config.js"></script>
   <script>
-    const SERVIZI_PREDEFINITI = [
-      "Visita dermatologica",
-      "Mappatura dei nei in epiluminescenza",
-      "Trattamento dell'acne",
-      "Tricologia (capelli e cuoio capelluto)",
-      "Crioterapia",
-      "Visita venereologica",
+    // Derivata dai servizi predefiniti del sito, più opzioni aggiuntive:
+    // un'unica lista da mantenere (in config.js).
+    const SERVIZI_PREDEFINITI = [...new Set([
+      ...DEFAULT_CONFIG.servizi,
       "Chirurgia dermatologica ambulatoriale",
       "Dermatologia pediatrica"
-    ];
+    ])];
 
     const form = document.getElementById("config-form");
     const serviziGrid = document.getElementById("servizi-grid");
